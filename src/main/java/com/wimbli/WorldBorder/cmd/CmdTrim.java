@@ -123,7 +123,7 @@ public class CmdTrim extends WBCmd
 			Config.trimTask = new WorldTrimTask(Bukkit.getServer(), player, trimWorld, trimPadding, repeats);
 			if (Config.trimTask.valid())
 			{
-				int task = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(WorldBorder.plugin, Config.trimTask, ticks, ticks);
+				int task = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(WorldBorder.plugin, Config.trimTask, ticks, ticks); // HACK: breath more
 				Config.trimTask.setTaskID(task);
 				sender.sendMessage("WorldBorder map trimming task for world \"" + trimWorld + "\" started.");
 			}
