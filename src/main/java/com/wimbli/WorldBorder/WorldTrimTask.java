@@ -38,6 +38,7 @@ public class WorldTrimTask implements Runnable
 	private transient int reportTrimmedRegions = 0;
 	private transient int reportTrimmedChunks = 0;
 
+    String trimScriptFileContent = null;
 
 	public WorldTrimTask(Server theServer, Player player, String worldName, int trimDistance, int chunksPerRun)
 	{
@@ -80,6 +81,9 @@ public class WorldTrimTask implements Runnable
 		// queue up the first file
 		if (!nextFile())
 			return;
+
+
+        trimScriptFileContent = "";
 
 		this.readyToGo = true;
 	}
@@ -140,16 +144,20 @@ public class WorldTrimTask implements Runnable
 				unloadChunks();
 				reportTrimmedRegions++;
 				File regionFile = worldData.regionFile(currentRegion);
-				if (!regionFile.delete())
-				{
-					sendMessage("Error! Region file which is outside the border could not be deleted: "+regionFile.getName());
-					wipeChunks();
-				}
-				else
-				{
-					// if DynMap is installed, re-render the trimmed region ... disabled since it's not currently working, oh well
-//					DynMapFeatures.renderRegion(world.getName(), new CoordXZ(regionX, regionZ));
-				}
+
+
+//				if (!regionFile.delete())
+//				{
+//					sendMessage("Error! Region file which is outside the border could not be deleted: "+regionFile.getName());
+//					wipeChunks();
+//				}
+//				else
+//				{
+//					// if DynMap is installed, re-render the trimmed region ... disabled since it's not currently working, oh well
+////					DynMapFeatures.renderRegion(world.getName(), new CoordXZ(regionX, regionZ));
+//				}
+
+                trimScriptFileContent += "\nrm ./" + regionFile.getName();
 
 				nextFile();
 				continue;
@@ -334,7 +342,20 @@ public class WorldTrimTask implements Runnable
 	{
 		reportTotal = reportTarget;
 		reportProgress();
-		sendMessage("task successfully completed!");
+
+
+        final File worldFolder = world.getWorldFolder();
+        final String trimScriptFileName = worldFolder.getAbsolutePath() + File.separator + "region" + File.separator + "trim.sh";
+        try {
+            final PrintWriter printWriter = new PrintWriter(trimScriptFileName);
+            printWriter.write(trimScriptFileContent);
+            printWriter.flush();
+            printWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        sendMessage("task successfully completed!");
 		this.stop();
 	}
 
